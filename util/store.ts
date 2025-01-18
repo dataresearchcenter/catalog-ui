@@ -16,7 +16,7 @@ import {
   emptyFilterValueCounts,
   emptyFilters,
 } from "./filterOptions";
-import { IDatasetTransformed } from "./transformFTM";
+import { IDatasetTransformed, TCountryNames } from "./transformFTM";
 import { applyActiveFilters } from "./util";
 
 type TSearchIndex = Fuse<IDatasetTransformed>;
@@ -24,10 +24,12 @@ type TSearchIndex = Fuse<IDatasetTransformed>;
 export interface IInitialState {
   readonly datasets: IDatasetTransformed[];
   readonly filterValueCounts: TFilterValueCounts;
+  readonly countryNames: TCountryNames;
 }
 
 interface IStore {
   readonly datasets: IDatasetTransformed[];
+  readonly countryNames: TCountryNames;
   searchIndex: TSearchIndex | null;
   filteredDatasets: IDatasetTransformed[];
   filterValueCounts: TFilterValueCounts;
@@ -63,6 +65,7 @@ const Store: IStore = {
   filterValueCounts: emptyFilterValueCounts,
   activeFilters: emptyFilters,
   datasets: [],
+  countryNames: {},
   searchIndex: null,
   loading: true,
   searchValue: "",
@@ -75,47 +78,36 @@ const Store: IStore = {
 
   // actions
   filter: action((state, payload) => {
-    console.log("FILTER");
     state.loading = true;
     state.activeFilters = payload;
-    console.log("DONE FILTER");
   }),
   search: action((state, payload) => {
-    console.log("SEARCH");
     state.loading = true;
     state.searchValue = payload;
-    console.log("DONE SEARCH");
   }),
   setSearchIndex: action((state, payload) => {
-    console.log("SET SEARCH INDEX");
     state.searchIndex = payload;
     state.loading = false;
   }),
   setFilteredDatasets: action((state, payload) => {
-    console.log("SET FILTERED DATASETS");
     state.filteredDatasets = payload;
     state.loading = false;
   }),
   setFilterValueCounts: action((state, payload) => {
-    console.log("SET FILTER VALUE COUNTS");
     state.filterValueCounts = payload;
     state.loading = false;
   }),
 
   // thunks
   initializeSearchIndex: thunk(async (actions, _, helpers) => {
-    console.log("INITIALIZE SEARCH");
     const { datasets } = helpers.getState();
     const searchIndex = await initializeSearchIndex(datasets);
     actions.setSearchIndex(searchIndex);
-    console.log("DONE INITIALIZE SEARCH");
   }),
   handleSearch: thunk(async (actions, payload, helpers) => {
-    console.log("HANDLE SEARCH");
     let { searchIndex, activeFilters, datasets } = helpers.getState();
     if (payload.length > 3) {
       if (!searchIndex) {
-        console.log("NO SEARCH INDEX");
         searchIndex = await initializeSearchIndex(datasets);
       }
       datasets = await filterDatasets(
@@ -125,19 +117,16 @@ const Store: IStore = {
       const filterValueCounts = await calculateFilterValueCounts(datasets);
       actions.setFilteredDatasets(datasets);
       actions.setFilterValueCounts(filterValueCounts);
-      console.log("DONE HANDLE SEARCH");
     } else {
       actions.handleFilter(activeFilters);
     }
   }),
   handleFilter: thunk(async (actions, payload, helpers) => {
-    console.log("HANDLE FILTER");
     const state = helpers.getState();
     const datasets = await filterDatasets(state.datasets, payload);
     const filterValueCounts = await calculateFilterValueCounts(datasets);
     actions.setFilteredDatasets(datasets);
     actions.setFilterValueCounts(filterValueCounts);
-    console.log("DONE HANDLE FILTER");
   }),
 
   // listeners
