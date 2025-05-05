@@ -58,19 +58,18 @@ export default function CTADrawer({ open, onClose }: TCTADrawer) {
         }}
       >
         <DrawerContentItem>
-          Are you interest to use this dataset in your next investigation?
+          Do you want to use this dataset in your next investigation?
         </DrawerContentItem>
         <DrawerContentItem>
-          We can provide you with a no-worries-all-in service to manage all your
-          research data.
+          We can provide you with a no-worries-all-in service to manage all your data.
         </DrawerContentItem>
-        <DrawerContentItem>Got curious?</DrawerContentItem>
+        <DrawerContentItem>Interested?</DrawerContentItem>
         {/* TODO: add CTA destination link */}
         <Button
           variant="outlined"
           size="md"
           component="a"
-          href="mailto:hi@investigativedata.org"
+          href="mailto:hi@dataresearchcenter.org"
           sx={{ width: "fit-content" }}
         >
           Get in touch
