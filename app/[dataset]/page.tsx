@@ -15,11 +15,9 @@ async function getDataset(name: string): Promise<IDataset> {
 
 type Params = { readonly dataset: string };
 
-export async function generateMetadata(
-  props: {
-    params: Promise<Params>;
-  }
-): Promise<Metadata> {
+export async function generateMetadata(props: {
+  params: Promise<Params>;
+}): Promise<Metadata> {
   const params = await props.params;
   const dataset = await getDataset(params.dataset);
   return {
@@ -35,7 +33,7 @@ export default async function DatasetPage(props: { params: Promise<Params> }) {
 
   const breadcrumbs = [
     {
-      label: "Back to Data Catalog",
+      label: "Back to library",
       url: "/",
     },
   ];
