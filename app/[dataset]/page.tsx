@@ -15,11 +15,12 @@ async function getDataset(name: string): Promise<IDataset> {
 
 type Params = { readonly dataset: string };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Params;
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<Params>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const dataset = await getDataset(params.dataset);
   return {
     title: dataset.title,
@@ -27,7 +28,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function DatasetPage({ params }: { params: Params }) {
+export default async function DatasetPage(props: { params: Promise<Params> }) {
+  const params = await props.params;
   const dataset = await getDataset(params.dataset);
   const datasetTransformed = transformFTMDataset(dataset);
 
