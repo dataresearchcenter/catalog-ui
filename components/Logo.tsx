@@ -13,7 +13,7 @@ export default function Logo() {
         target="_blank"
         rel="noopener"
         href="https://dataresearchcenter.org/"
-      >
+        legacyBehavior>
         <AspectRatio
           style={{ paddingLeft: "12px", width: "61px" }}
           variant="plain"
