@@ -1,11 +1,10 @@
-const withMDX = require("@next/mdx")();
+import withMDX from "@next/mdx";
+import type { NextConfig } from "next";
+import { BASE_PATH } from "./settings";
 
-const basePath = process.env.BASE_PATH || "/library";
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   output: "export",
-  basePath,
+  basePath: BASE_PATH,
   trailingSlash: true,
   images: {
     dangerouslyAllowSVG: true,
@@ -23,4 +22,4 @@ const nextConfig = {
   ),
 };
 
-module.exports = withMDX(nextConfig);
+export default withMDX()(nextConfig);
