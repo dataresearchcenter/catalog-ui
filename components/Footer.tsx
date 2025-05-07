@@ -48,7 +48,10 @@ const Footer = () => {
             href="https://dataresearchcenter.org/contact"
             label="Legal Notice"
           />
-          <FooterLink href={"/about"} label="About this page" />
+          <FooterLink
+            href={`${process.env.BASE_PATH}/about`}
+            label="About this page"
+          />
           <FooterLink
             href="https://dataresearchcenter.org/about"
             label="About dataresearchcenter.org"
