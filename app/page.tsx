@@ -13,8 +13,10 @@ const breadcrumbs = [
   },
 ];
 
+export const CACHE: RequestInit = { cache: "force-cache" };
+
 export default async function CatalogPage() {
-  const catalog = await getCatalog(CATALOG_URI);
+  const catalog = await getCatalog(CATALOG_URI, CACHE);
   const { datasets } = transformFTMCatalog(catalog as ICatalog);
   const filterValueCounts = calculateCatalogStats(datasets);
   const countryNames = getCountryNames(datasets);

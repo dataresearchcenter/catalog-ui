@@ -11,7 +11,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
-    "@investigativedata/ftmq": "^0.6.6",
+    "@investigativedata/ftmq": "^0.8.2",
     "@investigativedata/style": "^0.1.10",
     "@mdx-js/loader": "^3.0.1",
     "@mdx-js/react": "^3.0.1",

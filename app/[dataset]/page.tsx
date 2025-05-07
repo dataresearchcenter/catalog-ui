@@ -5,9 +5,10 @@ import Page from "~/components/Page";
 import DatasetScreen from "~/screens/DatasetScreen";
 import { CATALOG_URI } from "~/settings";
 import { transformFTMDataset } from "~/util/transformFTM";
+import { CACHE } from "../page";
 
 async function getDataset(name: string): Promise<IDataset> {
-  const catalog = await getCatalog(CATALOG_URI);
+  const catalog = await getCatalog(CATALOG_URI, CACHE);
   const dataset = catalog.datasets?.find((d) => d.name === name);
   if (!dataset) notFound();
   return dataset as IDataset;
