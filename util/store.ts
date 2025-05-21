@@ -170,7 +170,7 @@ const filterDatasets = async (
 ): Promise<IDatasetTransformed[]> =>
   Promise.resolve(
     applyActiveFilters(datasets, filters).sort((a, b) =>
-      a.updatedAt && (!b.updatedAt || a.updatedAt > b.updatedAt) ? 1 : -1,
+      a.updatedAt && (!b.updatedAt || a.updatedAt > b.updatedAt) ? -1 : 1,
     ),
   );
 
