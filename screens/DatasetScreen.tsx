@@ -1,17 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Link } from "@mui/joy";
 import Box from "@mui/joy/Box";
-import Button from "@mui/joy/Button";
 import Card from "@mui/joy/Card";
 import Grid from "@mui/joy/Grid";
+import Link from "@mui/joy/Link";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import CTADrawer from "~/components/CTADrawer";
 import CountryLabel from "~/components/CountryLabel";
 import DatasetLastUpdated from "~/components/Dataset/DatasetLastUpdated";
 import DatasetProperty from "~/components/Dataset/DatasetProperty";
+import DatasetResources from "~/components/Dataset/DatasetResources";
 import DatasetSectionItems from "~/components/Dataset/DatasetSectionItems";
 import Tags from "~/components/Tags";
 import { IDatasetTransformed } from "~/util/transformFTM";
@@ -136,10 +134,8 @@ const DatasetMetadataEntities = ({
 
 const DatasetMetadataSecondary = ({
   dataset,
-  openDrawer,
 }: {
   dataset: IDatasetTransformed;
-  openDrawer: any;
 }) => {
   const { publisher, maintainer } = dataset;
 
@@ -198,17 +194,6 @@ const DatasetMetadataSecondary = ({
           )}
         </>
       )}
-      <div>
-        <Button
-          size="md"
-          color="neutral"
-          variant="outlined"
-          onClick={openDrawer}
-          sx={{ backgroundColor: "transparent" }}
-        >
-          Use this data
-        </Button>
-      </div>
     </Stack>
   );
 };
@@ -218,16 +203,8 @@ export default function DatasetScreen({
 }: {
   dataset: IDatasetTransformed;
 }) {
-  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
-
   return (
-    <Box
-      sx={{
-        padding: "5rem 0",
-        maxWidth: "1400px",
-        margin: "auto",
-      }}
-    >
+    <Box sx={{ padding: "5rem 0", maxWidth: "1400px", margin: "auto" }}>
       <Stack>
         <Box sx={{ paddingBottom: "2rem" }}>
           <Typography level="h2" sx={{ paddingBottom: "1rem" }}>
@@ -243,14 +220,65 @@ export default function DatasetScreen({
             <DatasetMetadataEntities dataset={dataset} />
           </Grid>
           <Grid xs={12} sm={6} md={3.5}>
-            <DatasetMetadataSecondary
-              dataset={dataset}
-              openDrawer={() => setDrawerOpen(true)}
-            />
+            <DatasetMetadataSecondary dataset={dataset} />
           </Grid>
         </Grid>
       </Stack>
-      <CTADrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <Stack sx={{ paddingTop: 8 }}>
+        <Typography level="h3">Use this data</Typography>
+        {dataset.maintainer?.name === "OpenSanctions" && (
+          <Typography level="body-md">
+            <strong>{dataset.title || dataset.name}</strong> is a dataset
+            provided by{" "}
+            <Link href="https://opensanctions.org">OpenSanctions</Link>.
+            According to{" "}
+            <Link href="https://www.opensanctions.org/licensing/">
+              their licensing
+            </Link>
+            , you can use this data if you are a civic activist or journalist.
+            If you need this dataset for commercial use, please buy a license
+            from OpenSanctions.
+          </Typography>
+        )}
+        {dataset.alephUrl && (
+          <>
+            <Typography level="body-md">
+              <strong>Search in the data</strong>
+            </Typography>
+            <Typography level="body-md">
+              {dataset.title || dataset.name} is available to{" "}
+              <Link href={dataset.alephUrl}>search in OpenAleph</Link>.
+            </Typography>
+          </>
+        )}
+        <Typography level="body-md">
+          <strong>Cross-reference with your own data</strong>
+        </Typography>
+        <Typography level="body-md">
+          To cross-reference this dataset with your own data, you need an
+          exclusive instance of{" "}
+          <Link href="https://openaleph.org">OpenAleph</Link>. We at the{" "}
+          <Link href="https://dataresearchcenter.org">
+            Data and Research Center
+          </Link>{" "}
+          provide managed instances on our own secure infrastructure.{" "}
+          <Link href="https://openaleph.org/managed/">Learn more</Link> or{" "}
+          <Link href="mailto:hi@dataresearchcenter.org">get in touch</Link>.
+        </Typography>
+        {!!dataset.resources?.length && (
+          <>
+            <Typography level="body-md">
+              <strong>Get the raw data</strong>
+            </Typography>
+            <Typography level="body-md">
+              Download the raw data in the{" "}
+              <Link href="https://followthemoney.tech">FollowTheMoney</Link>{" "}
+              format from these sources:
+            </Typography>
+            <DatasetResources dataset={dataset} />
+          </>
+        )}
+      </Stack>
     </Box>
   );
 }

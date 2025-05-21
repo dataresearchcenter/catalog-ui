@@ -4,6 +4,7 @@ import {
   IDataset,
   IMaintainer,
   IPublisher,
+  IResource,
   ISchema,
   TContentType,
   TDatasetCategory,
@@ -32,6 +33,7 @@ export interface IDatasetTransformedBase {
 export interface IDatasetTransformed extends IDatasetTransformedBase {
   readonly summary?: string | null;
   readonly entityTypes?: ISchema[] | null;
+  readonly resources?: IResource[] | null;
 }
 
 export function transformFTMCatalog(catalog: ICatalog): ICatalogTransformed {
@@ -54,6 +56,7 @@ export function transformFTMDataset(
     tags,
     title,
     updated_at,
+    resources,
   } = dataset;
 
   const things = dataset.things;
@@ -93,6 +96,7 @@ export function transformFTMDataset(
     tags: tags || [],
     title,
     updatedAt: updated_at,
+    resources,
   };
 }
 
@@ -103,9 +107,7 @@ export function dehydrateDataset(
   return rest;
 }
 
-export type TCountryNames = {
-  [key: string]: string;
-};
+export type TCountryNames = { [key: string]: string };
 
 export function getCountryNames(
   datasets: IDatasetTransformed[],
