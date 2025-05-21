@@ -41,7 +41,7 @@ export default function CatalogControls() {
   );
 
   const toggleFilter = (field: TFilterField, value: string) => {
-    router.push(pathname + "?" + createQueryString(field, value));
+    router.push(pathname + "/?" + createQueryString(field, value));
   };
 
   const clearFilters = () => {
@@ -49,7 +49,7 @@ export default function CatalogControls() {
   };
 
   const clearFilterGroup = (field: TFilterField) => {
-    router.push(pathname + "?" + createQueryString(field));
+    router.push(pathname + "/?" + createQueryString(field));
   };
 
   const filtersComponentProps = {
