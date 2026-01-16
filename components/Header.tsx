@@ -88,7 +88,7 @@ const Header = ({ crumbs, isRoot }: HeaderProps) => {
                 textDecoration: "none",
               }}
               href="/"
-            >
+              legacyBehavior>
               {PAGE_TITLE}
             </Link>
           </Typography>

@@ -5,9 +5,10 @@ import Page from "~/components/Page";
 import DatasetScreen from "~/screens/DatasetScreen";
 import { CATALOG_URI } from "~/settings";
 import { transformFTMDataset } from "~/util/transformFTM";
+import { CACHE } from "../page";
 
 async function getDataset(name: string): Promise<IDataset> {
-  const catalog = await getCatalog(CATALOG_URI);
+  const catalog = await getCatalog(CATALOG_URI, CACHE);
   const dataset = catalog.datasets?.find((d) => d.name === name);
   if (!dataset) notFound();
   return dataset as IDataset;
@@ -15,11 +16,10 @@ async function getDataset(name: string): Promise<IDataset> {
 
 type Params = { readonly dataset: string };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Params;
+export async function generateMetadata(props: {
+  params: Promise<Params>;
 }): Promise<Metadata> {
+  const params = await props.params;
   const dataset = await getDataset(params.dataset);
   return {
     title: dataset.title,
@@ -27,13 +27,14 @@ export async function generateMetadata({
   };
 }
 
-export default async function DatasetPage({ params }: { params: Params }) {
+export default async function DatasetPage(props: { params: Promise<Params> }) {
+  const params = await props.params;
   const dataset = await getDataset(params.dataset);
   const datasetTransformed = transformFTMDataset(dataset);
 
   const breadcrumbs = [
     {
-      label: "Back to Data Catalog",
+      label: "Back to library",
       url: "/",
     },
   ];

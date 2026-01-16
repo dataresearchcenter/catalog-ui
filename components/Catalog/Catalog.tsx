@@ -17,8 +17,6 @@ export default function Catalog() {
     </Grid>
   ));
 
-  console.log("LOADING", loading);
-
   return (
     <Box>
       <Grid container spacing={2} sx={{ flexGrow: 1 }}>

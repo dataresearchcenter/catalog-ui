@@ -2,6 +2,7 @@ import Box from "@mui/joy/Box";
 import Link from "@mui/joy/Link";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
+import { BASE_PATH } from "~/settings";
 
 interface IFooterLink {
   href: string;
@@ -45,13 +46,13 @@ const Footer = () => {
           alignSelf="center"
         >
           <FooterLink
-            href="https://investigativedata.io/contact"
+            href="https://dataresearchcenter.org/contact"
             label="Legal Notice"
           />
-          <FooterLink href={"/about"} label="About this page" />
+          <FooterLink href={`${BASE_PATH}/about`} label="About this page" />
           <FooterLink
-            href="https://investigativedata.io/about"
-            label="About investigativedata.io"
+            href="https://dataresearchcenter.org/about"
+            label="About dataresearchcenter.org"
           />
         </Stack>
         <Typography

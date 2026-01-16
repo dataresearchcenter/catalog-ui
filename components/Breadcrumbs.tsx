@@ -20,7 +20,7 @@ export default function Breadcrumbs({ crumbs }: { crumbs: TBreadrumb[] }) {
     >
       {crumbs.map(({ label, url }, ix) =>
         url ? (
-          <Link key={ix} href={url}>
+          <Link key={ix} href={url} legacyBehavior>
             {label}
           </Link>
         ) : (
