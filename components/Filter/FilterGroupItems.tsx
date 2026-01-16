@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Theme } from "@mui/joy";
 import Checkbox from "@mui/joy/Checkbox";
 import List from "@mui/joy/List";
@@ -14,7 +15,7 @@ export type TFilterGroupItems = {
   onChange: (value: string) => void;
 };
 
-export default function FilterGroupItems({
+export default memo(function FilterGroupItems({
   items,
   activeFilters,
   onChange,
@@ -57,4 +58,4 @@ export default function FilterGroupItems({
       ))}
     </List>
   );
-}
+});

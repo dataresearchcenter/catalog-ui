@@ -8,8 +8,8 @@ import Grid from "@mui/joy/Grid";
 import Typography from "@mui/joy/Typography";
 import Catalog from "~/components/Catalog/Catalog";
 import CatalogControls from "~/components/Catalog/CatalogControls";
+import { useStoreActions } from "~/components/Store";
 import { getFiltersFromUrlParams } from "~/util/filterOptions";
-import { useStoreActions } from "~/util/store";
 import { HeaderScrollContext } from "../components/PageContext";
 
 type IFixedColumn = {
@@ -51,21 +51,13 @@ const FixedColumn = ({
 };
 
 export default function CatalogScreen() {
-  const initializeSearchIndex = useStoreActions(
-    (actions) => actions.initializeSearchIndex,
-  );
-  const filter = useStoreActions((actions) => actions.filter);
+  const { filter } = useStoreActions();
   const searchParams = useSearchParams();
-
-  // compute search index on mount
-  useEffect(() => {
-    initializeSearchIndex();
-  }, []);
 
   // filter on url params change
   useEffect(() => {
     filter(getFiltersFromUrlParams(searchParams));
-  }, [searchParams]);
+  }, [searchParams, filter]);
 
   return (
     <Grid container spacing={4} sx={{ flexGrow: 1, marginBottom: "1rem" }}>

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import NLink from "next/link";
 import type { Theme } from "@mui/joy";
 import Card from "@mui/joy/Card";
@@ -26,7 +27,7 @@ const DatasetLink = ({
   </NLink>
 );
 
-export default function CatalogItem({ item }: CatalogItemProps) {
+export default memo(function CatalogItem({ item }: CatalogItemProps) {
   return (
     <Card
       color="success"
@@ -68,4 +69,4 @@ export default function CatalogItem({ item }: CatalogItemProps) {
       </CardContent>
     </Card>
   );
-}
+});

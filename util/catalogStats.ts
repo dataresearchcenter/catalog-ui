@@ -40,26 +40,26 @@ const getOrderedFieldCounts = (
 };
 
 const getCountryCounts = (items: IDatasetTransformed[]) => {
-  const flattenedCountries: any[] = items
-    .map(({ countries }) => countries)
-    .flat()
-    .filter((country) => !!country);
+  const countLookup: Record<string, TFilterValueCount> = {};
 
-  const countLookup: Record<string, TFilterValueCount> =
-    flattenedCountries.reduce(
-      (acc, item) => ({
-        ...acc,
-        [item.code]: {
-          label: item.label,
-          count: (acc[item.code]?.count || 0) + 1,
-        },
-      }),
-      {},
-    );
+  for (const { countries } of items) {
+    if (!countries) continue;
+    for (const country of countries) {
+      if (!country) continue;
+      const existing = countLookup[country.code];
+      if (existing) {
+        existing.count += 1;
+      } else {
+        countLookup[country.code] = {
+          value: country.code,
+          label: country.label ?? undefined,
+          count: 1,
+        };
+      }
+    }
+  }
 
-  return Object.entries(countLookup)
-    .map(([value, { label, count }]) => ({ value, label, count }))
-    .sort((a, b) => (a.count < b.count ? 1 : -1));
+  return Object.values(countLookup).sort((a, b) => b.count - a.count);
 };
 
 const getTags = (items: IDatasetTransformed[]) => {
