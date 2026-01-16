@@ -32,10 +32,8 @@ export function applyActiveFilters(
   }
 
   if (filters.countries.length > 0) {
-    filteredItems = filteredItems.filter(({ countries }) =>
-      filters.countries.some((c: string) =>
-        countries?.find(({ code }) => code === c),
-      ),
+    filteredItems = filteredItems.filter(({ countryCodes }) =>
+      countryCodes && filters.countries.some((c: string) => countryCodes.has(c)),
     );
   }
   return filteredItems;

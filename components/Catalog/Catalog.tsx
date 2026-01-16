@@ -4,23 +4,26 @@ import Box from "@mui/joy/Box";
 import Grid from "@mui/joy/Grid";
 import Typography from "@mui/joy/Typography";
 import iconOkHand from "~/assets/icons/ok.svg";
-import { useStoreState } from "~/util/store";
+import { useStoreState } from "~/components/Store";
 import Loading from "../Loading";
 import CatalogItem from "./CatalogItem";
 
 export default function Catalog() {
   const datasets = useStoreState((state) => state.filteredDatasets);
   const loading = useStoreState((state) => state.loading);
-  const Datasets = datasets.map((d) => (
-    <Grid key={d.name} xs={12} sm={6} md={12} lg={6}>
-      <CatalogItem key={d.name} item={d} />
-    </Grid>
-  ));
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <Box>
       <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-        {loading ? <Loading /> : Datasets}
+        {datasets.map((d) => (
+          <Grid key={d.name} xs={12} sm={6} md={12} lg={6}>
+            <CatalogItem item={d} />
+          </Grid>
+        ))}
       </Grid>
       <Box
         padding="4rem 0 4rem"

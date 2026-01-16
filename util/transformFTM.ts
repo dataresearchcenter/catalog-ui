@@ -20,6 +20,7 @@ export interface IDatasetTransformedBase {
   readonly category?: TDatasetCategory | string;
   readonly contentType?: TContentType | string | null;
   readonly countries?: ICountry[] | null;
+  readonly countryCodes?: Set<string>; // Pre-indexed for O(1) filtering
   readonly entityCount?: number | null;
   readonly frequency?: TDatasetFrequency;
   readonly maintainer?: IMaintainer | null;
@@ -37,7 +38,12 @@ export interface IDatasetTransformed extends IDatasetTransformedBase {
 }
 
 export function transformFTMCatalog(catalog: ICatalog): ICatalogTransformed {
-  return { datasets: catalog.datasets?.map(transformFTMDataset) || [] };
+  const datasets = catalog.datasets?.map(transformFTMDataset) || [];
+  // Pre-sort by updatedAt once at load time
+  datasets.sort((a, b) =>
+    a.updatedAt && (!b.updatedAt || a.updatedAt > b.updatedAt) ? -1 : 1,
+  );
+  return { datasets };
 }
 
 export function transformFTMDataset(
@@ -81,11 +87,14 @@ export function transformFTMDataset(
     }, {}),
   ).sort((a: any, b: any) => (a.count > b.count ? -1 : 1));
 
+  const countryCodes = new Set(countriesMerged.map((c: any) => c.code));
+
   return {
     alephUrl: aleph_url,
     category: category || "Other",
     contentType: content_type || "Structured",
     countries: countriesMerged as ICountry[],
+    countryCodes,
     entityCount: entity_count,
     entityTypes: schemataMerged,
     frequency: coverage?.frequency,

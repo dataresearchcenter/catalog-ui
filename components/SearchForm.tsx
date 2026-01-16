@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Input from "@mui/joy/Input";
 import iconSearch from "~/assets/icons/search.svg";
-import { useStoreActions } from "~/util/store";
+import { useStoreActions } from "~/components/Store";
 import { useDebounce } from "~/util/util";
 
 export default function SearchForm() {
-  const search = useStoreActions((actions) => actions.search);
+  const { search } = useStoreActions();
   const [searchValue, setSearchValue] = useState<string>("");
   const debouncedSearchValue = useDebounce(searchValue);
 

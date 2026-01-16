@@ -1,25 +1,22 @@
-import {
-  Action,
-  Computed,
-  Thunk,
-  ThunkOn,
-  action,
-  computed,
-  createTypedHooks,
-  thunk,
-  thunkOn,
-} from "easy-peasy";
 import Fuse from "fuse.js";
-import calculateCatalogStats, { TFilterValueCounts } from "./catalogStats";
-import {
-  TActiveFilters,
-  emptyFilterValueCounts,
-  emptyFilters,
-} from "./filterOptions";
+import { TFilterValueCounts } from "./catalogStats";
+import { TActiveFilters, emptyFilters } from "./filterOptions";
 import { IDatasetTransformed, TCountryNames } from "./transformFTM";
 import { applyActiveFilters } from "./util";
+import calculateCatalogStats from "./catalogStats";
 
 type TSearchIndex = Fuse<IDatasetTransformed>;
+
+export interface IState {
+  readonly datasets: IDatasetTransformed[];
+  readonly countryNames: TCountryNames;
+  readonly searchIndex: TSearchIndex | null;
+  readonly filteredDatasets: IDatasetTransformed[];
+  readonly filterValueCounts: TFilterValueCounts;
+  readonly activeFilters: TActiveFilters;
+  readonly searchValue: string;
+  readonly loading: boolean;
+}
 
 export interface IInitialState {
   readonly datasets: IDatasetTransformed[];
@@ -27,161 +24,100 @@ export interface IInitialState {
   readonly countryNames: TCountryNames;
 }
 
-interface IStore {
-  readonly datasets: IDatasetTransformed[];
-  readonly countryNames: TCountryNames;
-  searchIndex: TSearchIndex | null;
-  filteredDatasets: IDatasetTransformed[];
-  filterValueCounts: TFilterValueCounts;
-  activeFilters: TActiveFilters;
-  loading: boolean;
-  searchValue: string;
+// Computed selectors
+export const selectTotalCount = (state: IState) => state.datasets.length;
+export const selectActiveCount = (state: IState) => state.filteredDatasets.length;
+export const selectActiveFilterCount = (state: IState) =>
+  Object.values(state.activeFilters).flat().length;
 
-  totalCount: Computed<IStore, number>;
-  activeCount: Computed<IStore, number>;
-  activeFilterCount: Computed<IStore, number>;
+// Helper functions
+const createSearchIndex = (datasets: IDatasetTransformed[]): TSearchIndex =>
+  new Fuse(datasets, {
+    threshold: 0,
+    ignoreLocation: true,
+    keys: ["title", "publisher.name", "maintainer.name"],
+  });
 
-  // public actions
-  readonly filter: Action<IStore, TActiveFilters>;
-  readonly search: Action<IStore, string>;
-
-  // internal actions
-  readonly setSearchIndex: Action<IStore, TSearchIndex>;
-  readonly setFilteredDatasets: Action<IStore, IDatasetTransformed[]>;
-  readonly setFilterValueCounts: Action<IStore, TFilterValueCounts>;
-
-  // thunks
-  readonly initializeSearchIndex: Thunk<IStore>;
-  readonly handleSearch: Thunk<IStore, string>;
-  readonly handleFilter: Thunk<IStore, TActiveFilters>;
-
-  // listeners that trigger async actions
-  readonly onSetActiveFilters: ThunkOn<IStore>;
-  readonly onSetSearchValue: ThunkOn<IStore>;
-}
-
-const Store: IStore = {
-  filteredDatasets: [],
-  filterValueCounts: emptyFilterValueCounts,
-  activeFilters: emptyFilters,
-  datasets: [],
-  countryNames: {},
-  searchIndex: null,
-  loading: true,
-  searchValue: "",
-
-  totalCount: computed((state) => state.datasets.length),
-  activeCount: computed((state) => state.filteredDatasets.length),
-  activeFilterCount: computed(
-    (state) => Object.values(state.activeFilters).flat().length,
-  ),
-
-  // actions
-  filter: action((state, payload) => {
-    state.loading = true;
-    state.activeFilters = payload;
-  }),
-  search: action((state, payload) => {
-    state.loading = true;
-    state.searchValue = payload;
-  }),
-  setSearchIndex: action((state, payload) => {
-    state.searchIndex = payload;
-    state.loading = false;
-  }),
-  setFilteredDatasets: action((state, payload) => {
-    state.filteredDatasets = payload;
-    state.loading = false;
-  }),
-  setFilterValueCounts: action((state, payload) => {
-    state.filterValueCounts = payload;
-    state.loading = false;
-  }),
-
-  // thunks
-  initializeSearchIndex: thunk(async (actions, _, helpers) => {
-    const { datasets } = helpers.getState();
-    const searchIndex = await initializeSearchIndex(datasets);
-    actions.setSearchIndex(searchIndex);
-  }),
-  handleSearch: thunk(async (actions, payload, helpers) => {
-    let { searchIndex, activeFilters, datasets } = helpers.getState();
-    if (payload.length > 3) {
-      if (!searchIndex) {
-        searchIndex = await initializeSearchIndex(datasets);
-      }
-      datasets = await filterDatasets(
-        await searchDatasets(searchIndex, payload),
-        activeFilters,
-      );
-      const filterValueCounts = await calculateFilterValueCounts(datasets);
-      actions.setFilteredDatasets(datasets);
-      actions.setFilterValueCounts(filterValueCounts);
-    } else {
-      actions.handleFilter(activeFilters);
-    }
-  }),
-  handleFilter: thunk(async (actions, payload, helpers) => {
-    const state = helpers.getState();
-    const datasets = await filterDatasets(state.datasets, payload);
-    const filterValueCounts = await calculateFilterValueCounts(datasets);
-    actions.setFilteredDatasets(datasets);
-    actions.setFilterValueCounts(filterValueCounts);
-  }),
-
-  // listeners
-  onSetActiveFilters: thunkOn(
-    (actions) => actions.filter,
-    async (actions, target) => {
-      const activeFilters = target.payload;
-      actions.handleFilter(activeFilters);
-    },
-  ),
-  onSetSearchValue: thunkOn(
-    (actions) => actions.search,
-    async (actions, target) => {
-      const searchValue = target.payload;
-      actions.handleSearch(searchValue);
-    },
-  ),
-};
-
-const initializeSearchIndex = async (
-  datasets: IDatasetTransformed[],
-): Promise<TSearchIndex> => {
-  return Promise.resolve(
-    new Fuse(datasets, {
-      threshold: 0,
-      ignoreLocation: true,
-      keys: ["title", "publisher.name", "maintainer.name"],
-    }),
-  );
-};
-
-const searchDatasets = async (
-  searchIndex: TSearchIndex,
-  value: string,
-): Promise<IDatasetTransformed[]> =>
-  Promise.resolve(searchIndex.search(value).map((r) => r.item));
-
-const filterDatasets = async (
+const filterAndCalculateFacets = (
   datasets: IDatasetTransformed[],
   filters: TActiveFilters,
-): Promise<IDatasetTransformed[]> =>
-  Promise.resolve(
-    applyActiveFilters(datasets, filters).sort((a, b) =>
-      a.updatedAt && (!b.updatedAt || a.updatedAt > b.updatedAt) ? -1 : 1,
-    ),
-  );
+) => {
+  const filteredDatasets = applyActiveFilters(datasets, filters);
+  const filterValueCounts = calculateCatalogStats(filteredDatasets);
+  return { filteredDatasets, filterValueCounts };
+};
 
-const calculateFilterValueCounts = async (
-  datasets: IDatasetTransformed[],
-): Promise<TFilterValueCounts> =>
-  Promise.resolve(calculateCatalogStats(datasets));
+// Store factory
+export function createStore(initial: IInitialState) {
+  let state: IState = {
+    datasets: initial.datasets,
+    countryNames: initial.countryNames,
+    searchIndex: null,
+    filteredDatasets: initial.datasets,
+    filterValueCounts: initial.filterValueCounts,
+    activeFilters: emptyFilters,
+    searchValue: "",
+    loading: true,
+  };
 
-export default Store;
+  const listeners = new Set<() => void>();
 
-const typedHooks = createTypedHooks<IStore>();
-export const useStoreActions = typedHooks.useStoreActions;
-export const useStoreDispatch = typedHooks.useStoreDispatch;
-export const useStoreState = typedHooks.useStoreState;
+  const notify = () => {
+    listeners.forEach((listener) => listener());
+  };
+
+  const setState = (partial: Partial<IState>) => {
+    state = { ...state, ...partial };
+    notify();
+  };
+
+  return {
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+
+    getSnapshot: () => state,
+
+    getServerSnapshot: () => state,
+
+    actions: {
+      filter: (filters: TActiveFilters) => {
+        const { filteredDatasets, filterValueCounts } = filterAndCalculateFacets(
+          state.datasets,
+          filters,
+        );
+        setState({
+          activeFilters: filters,
+          filteredDatasets,
+          filterValueCounts,
+          loading: false,
+        });
+      },
+
+      search: (value: string) => {
+        const searchIndex = state.searchIndex ?? createSearchIndex(state.datasets);
+
+        let baseDatasets = state.datasets;
+        if (value.length > 3) {
+          baseDatasets = searchIndex.search(value).map((r) => r.item);
+        }
+
+        const { filteredDatasets, filterValueCounts } = filterAndCalculateFacets(
+          baseDatasets,
+          state.activeFilters,
+        );
+
+        setState({
+          searchValue: value,
+          searchIndex,
+          filteredDatasets,
+          filterValueCounts,
+        });
+      },
+    },
+  };
+}
+
+export type TStore = ReturnType<typeof createStore>;
+export type TActions = TStore["actions"];

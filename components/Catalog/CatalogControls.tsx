@@ -2,8 +2,13 @@ import React, { useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Box from "@mui/joy/Box";
 import Stack from "@mui/joy/Stack";
+import {
+  useStoreState,
+  useTotalCount,
+  useActiveCount,
+  useActiveFilterCount,
+} from "~/components/Store";
 import { TFilterField } from "~/util/filterOptions";
-import { useStoreState } from "~/util/store";
 import FilterCount from "../Filter/FilterCount";
 import FilterModal from "../Filter/FilterModal";
 import FilterResultSummary from "../Filter/FilterResultSummary";
@@ -15,9 +20,9 @@ export default function CatalogControls() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const totalCount = useStoreState((state) => state.totalCount);
-  const activeCount = useStoreState((state) => state.activeCount);
-  const activeFilterCount = useStoreState((state) => state.activeFilterCount);
+  const totalCount = useTotalCount();
+  const activeCount = useActiveCount();
+  const activeFilterCount = useActiveFilterCount();
   const activeFilters = useStoreState((state) => state.activeFilters);
   const filterValueCounts = useStoreState((state) => state.filterValueCounts);
 
