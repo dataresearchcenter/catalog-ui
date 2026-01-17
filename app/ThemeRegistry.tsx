@@ -19,44 +19,64 @@ interface IThemeRegistry {
   readonly options: IOptions;
 }
 
+function createEmotionCache(options: IOptions) {
+  // Only create cache on the client side
+  if (typeof document === "undefined") {
+    return null;
+  }
+  const cache = createCache(options);
+  cache.compat = true;
+  return cache;
+}
+
 export default function ThemeRegistry(
   props: React.PropsWithChildren<IThemeRegistry>,
 ) {
   const { options, children } = props;
 
-  const [{ cache, flush }] = React.useState(() => {
-    const cache = createCache(options);
-    cache.compat = true;
-    const prevInsert = cache.insert;
-    let inserted: string[] = [];
-    cache.insert = (...args) => {
-      const serialized = args[1];
-      if (cache.inserted[serialized.name] === undefined) {
-        inserted.push(serialized.name);
-      }
-      return prevInsert(...args);
-    };
-    const flush = () => {
-      const prevInserted = inserted;
-      inserted = [];
-      return prevInserted;
-    };
-    return { cache, flush };
-  });
+  const [cacheState, setCacheState] = React.useState<{
+    cache: ReturnType<typeof createCache> | null;
+    flush: () => string[];
+  }>(() => ({
+    cache: null,
+    flush: () => [],
+  }));
+
+  React.useEffect(() => {
+    const cache = createEmotionCache(options);
+    if (cache) {
+      const prevInsert = cache.insert;
+      let inserted: string[] = [];
+      cache.insert = (...args) => {
+        const serialized = args[1];
+        if (cache.inserted[serialized.name] === undefined) {
+          inserted.push(serialized.name);
+        }
+        return prevInsert(...args);
+      };
+      const flush = () => {
+        const prevInserted = inserted;
+        inserted = [];
+        return prevInserted;
+      };
+      setCacheState({ cache, flush });
+    }
+  }, [options]);
 
   useServerInsertedHTML(() => {
-    const names = flush();
+    if (!cacheState.cache) return null;
+    const names = cacheState.flush();
     if (names.length === 0) {
       return null;
     }
     let styles = "";
     for (const name of names) {
-      styles += cache.inserted[name];
+      styles += cacheState.cache.inserted[name];
     }
     return (
       <style
-        key={cache.key}
-        data-emotion={`${cache.key} ${names.join(" ")}`}
+        key={cacheState.cache.key}
+        data-emotion={`${cacheState.cache.key} ${names.join(" ")}`}
         dangerouslySetInnerHTML={{
           __html: styles,
         }}
@@ -64,10 +84,19 @@ export default function ThemeRegistry(
     );
   });
 
-  return (
-    <CacheProvider value={cache}>
+  // During SSR/prerendering, render children without CacheProvider
+  if (!cacheState.cache) {
+    return (
       <CssVarsProvider theme={theme}>
-        {/* the custom theme is optional */}
+        <CssBaseline />
+        {children}
+      </CssVarsProvider>
+    );
+  }
+
+  return (
+    <CacheProvider value={cacheState.cache}>
+      <CssVarsProvider theme={theme}>
         <CssBaseline />
         {children}
       </CssVarsProvider>

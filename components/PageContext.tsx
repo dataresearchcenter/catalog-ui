@@ -1,3 +1,5 @@
+"use client";
+
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 
 const HEADER_COLLAPSE_SCROLLPOINT = 180;

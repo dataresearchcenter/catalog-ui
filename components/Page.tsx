@@ -1,12 +1,16 @@
 "use client";
 
 import { useContext } from "react";
+import dynamic from "next/dynamic";
 import Box from "@mui/joy/Box";
-import ThemeRegistry from "~/app/ThemeRegistry";
 import type { TBreadrumb } from "./Breadcrumbs";
 import Footer from "./Footer";
 import Header from "./Header";
 import PageContext, { HeaderScrollContext } from "./PageContext";
+
+const ThemeRegistry = dynamic(() => import("~/app/ThemeRegistry"), {
+  ssr: false,
+});
 
 type TPage = { crumbs: TBreadrumb[]; isRoot?: boolean };
 
